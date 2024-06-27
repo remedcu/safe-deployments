@@ -110,5 +110,4 @@ git restore --ignore-unmerged -- src/assets
 # - We should still manually verify there is no extra chain added in the PR.
 # - We can approve PR using Github CLI. Should only be added after all manual tasks can be automated.
 # - Supporting zkSync and alternative deployment addresses for 1.3.0 contracts.
-# - If there are changes in any other path other than src/assets, the script should show an error.
 # - We should ensure there are not more than a single chain ID being added in a PR.
