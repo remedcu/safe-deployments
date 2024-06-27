@@ -65,6 +65,16 @@ if [[ ${#versionFiles[@]} -eq 0 ]]; then
     exit 1
 fi
 
+# Fetching PR and checking if other files are changed or not.
+echo "Checking changes to other files"
+filePaths=$(gh pr diff $pr --name-only | grep -v 'src/assets/v'$version'/.*\.json')
+if [[ -n $filePaths ]]; then
+    echo "ERROR: PR contains changes in files other than src/assets/v$version/*.json" 1>&2
+    echo "Changed files:"
+    echo "$filePaths"
+    exit 1
+fi
+
 echo "Verifying Deployment Asset"
 gh pr diff $pr --patch | git apply --include 'src/assets/**'
 
@@ -89,7 +99,7 @@ echo "Network addresses & Code hashes are correct"
 git restore --ignore-unmerged -- src/assets
 
 # NOTE/TODO
-# - We should still manually verify there is no extra code in the PR.
+# - We should still manually verify there is no extra chain added in the PR.
 # - We could fetch the version, chain id and rpc from the PR (needs a standard format and possibly a tag in PR).
 # - We can approve PR using Github CLI. Should only be added after all manual tasks can be automated.
 # - Supporting zkSync and alternative deployment addresses for 1.3.0 contracts.
