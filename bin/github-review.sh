@@ -22,10 +22,10 @@ EXAMPLES
 EOF
 }
 
-# if [[ -n "$(git status --porcelain)" ]]; then
-#     echo "ERROR: Dirty Git index, please commit all changes before continuing" 1>&2
-#     exit 1
-# fi
+if [[ -n "$(git status --porcelain)" ]]; then
+    echo "ERROR: Dirty Git index, please commit all changes before continuing" 1>&2
+    exit 1
+fi
 if ! command -v gh &> /dev/null; then
     echo "ERROR: Please install the 'gh' GitHub CLI" 1>&2
     exit 1
@@ -35,11 +35,7 @@ if ! command -v cast &> /dev/null; then
     exit 1
 fi
 
-<<<<<<< HEAD
 if [[ "$#" -ne 1 ]]; then
-=======
-if [[ "$#" -ne 4 ]]; then
->>>>>>> 3676e47786e5c7ec29ff262c402a7675366db4c7
     usage
     exit 1
 fi
