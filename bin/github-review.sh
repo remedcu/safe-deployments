@@ -22,10 +22,10 @@ EXAMPLES
 EOF
 }
 
-if [[ -n "$(git status --porcelain)" ]]; then
-    echo "ERROR: Dirty Git index, please commit all changes before continuing" 1>&2
-    exit 1
-fi
+# if [[ -n "$(git status --porcelain)" ]]; then
+#     echo "ERROR: Dirty Git index, please commit all changes before continuing" 1>&2
+#     exit 1
+# fi
 if ! command -v gh &> /dev/null; then
     echo "ERROR: Please install the 'gh' GitHub CLI" 1>&2
     exit 1
@@ -64,7 +64,7 @@ if [[ $chainid != $prChainID ]]; then
     usage
     exit 1
 fi
-version=$(gh pr view $pr | sed -nE 's/.*Contract_Version: (1\.[3-4]\.[0-1]).*/\1/p')
+version="$(gh pr view $pr | sed -nE 's/.*Contract_Version: (1\.[3-4]\.[0-1]).*/\1/p')"
 versionFiles=(src/assets/v$version/*.json)
 if [[ ${#versionFiles[@]} -eq 0 ]]; then
     echo "ERROR: Version $version doesn't exist" 1>&2
@@ -74,11 +74,10 @@ fi
 
 # Fetching PR and checking if other files are changed or not.
 echo "Checking changes to other files"
-filePaths=$(gh pr diff $pr --name-only | grep -v 'src/assets/v'$version'/.*\.json')
-if [[ -n $filePaths ]]; then
+if [[ -n "$(gh pr diff $pr --name-only | grep -v -e 'src/assets/v'$version'/.*\.json')" ]]; then
     echo "ERROR: PR contains changes in files other than src/assets/v$version/*.json" 1>&2
     echo "Changed files:"
-    echo "$filePaths"
+    echo "$(gh pr diff $pr --name-only | grep -v -e 'src/assets/v'$version'/.*\.json')"
     exit 1
 fi
 
