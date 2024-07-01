@@ -51,9 +51,8 @@ if ! [[ $prChainID =~ ^[0-9]+$ ]]; then
     usage
     exit 1
 fi
-chainlistURL="$(gh pr view $pr | sed -nE 's/.*Chainlist_URL: (https?:\/\/[^ ]+).*/\1/p' | tr -d '\n\r')"
-chainlistURLResult="$(curl -s "$chainlistURL")"
-if [[ $chainlistURLResult == 'nope' ]]; then
+chainlistURL="https://chainlist.org/chain/$prChainID"
+if [[ "$(curl -s "$chainlistURL")" == 'nope' ]]; then
     echo "ERROR: Chainlist URL $chainlistURL doesn't exist" 1>&2
     usage
     exit 1
