@@ -35,7 +35,11 @@ if ! command -v cast &> /dev/null; then
     exit 1
 fi
 
+<<<<<<< HEAD
 if [[ "$#" -ne 1 ]]; then
+=======
+if [[ "$#" -ne 4 ]]; then
+>>>>>>> 3676e47786e5c7ec29ff262c402a7675366db4c7
     usage
     exit 1
 fi
