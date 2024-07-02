@@ -73,7 +73,7 @@ echo "Checking changes to other files"
 if [[ -n "$(gh pr diff $pr --name-only | grep -v -e 'src/assets/v'$version'/.*\.json')" ]]; then
     echo "ERROR: PR contains changes in files other than src/assets/v$version/*.json" 1>&2
     echo "Changed files:"
-    echo "$(gh pr diff $pr --name-only | grep -v -e 'src/assets/v'$version'/.*\.json')"
+    echo "$(gh pr diff $pr --name-only | grep -v -e 'src/assets/v'$version'/.*\.json')" 1>&2
     exit 1
 fi
 
@@ -130,7 +130,7 @@ if [[ $edgeCase == 1 ]]; then
                 fi
                 # Check the pattern for the set of three lines
                 if [ "$pattern_correct" = false ]; then
-                    echo "Unknown lines added or removed"
+                    echo "Unknown lines added or removed" 1>&2
                     exit 1
                 fi
                 # Reset the pattern_correct flag for the next set of lines
