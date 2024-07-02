@@ -22,6 +22,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
       - name: Check PR
         id: review-check-result
         run: |
