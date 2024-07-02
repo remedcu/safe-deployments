@@ -35,7 +35,7 @@ if ! command -v cast &> /dev/null; then
     exit 1
 fi
 
-if [[ "$#" -ne 4 ]]; then
+if [[ "$#" -ne 1 ]]; then
     usage
     exit 1
 fi
@@ -45,19 +45,26 @@ if ! [[ $1 =~ ^[0-9]+$ ]]; then
     exit 1
 fi
 pr=$1
-if ! [[ $2 =~ ^[0-9]+$ ]]; then
-    echo "ERROR: $2 is not a valid Chain ID number" 1>&2
+prChainID="$(gh pr view $pr | sed -nE 's/.*Chain_ID: ([0-9]+).*/\1/p')"
+if ! [[ $prChainID =~ ^[0-9]+$ ]]; then
+    echo "ERROR: $prChainID is not a valid Chain ID number" 1>&2
     usage
     exit 1
 fi
-rpc=$3
+chainlistURL="https://chainlist.org/chain/$prChainID"
+if [[ "$(curl -s "$chainlistURL")" == 'nope' ]]; then
+    echo "ERROR: Chainlist URL $chainlistURL doesn't exist" 1>&2
+    usage
+    exit 1
+fi
+rpc="$(gh pr view $pr | sed -nE 's/.*RPC_URL: (https?:\/\/[^ ]+).*/\1/p')"
 chainid="$(cast chain-id --rpc-url $rpc)"
-if [[ $chainid != $2 ]]; then
-    echo "ERROR: RPC $rpc doesn't match chain ID $2" 1>&2
+if [[ $chainid != $prChainID ]]; then
+    echo "ERROR: RPC $rpc doesn't match chain ID $prChainID" 1>&2
     usage
     exit 1
 fi
-version=$4
+version="$(gh pr view $pr | sed -nE 's/.*Contract_Version: (1\.[3-4]\.[0-1]).*/\1/p')"
 versionFiles=(src/assets/v$version/*.json)
 if [[ ${#versionFiles[@]} -eq 0 ]]; then
     echo "ERROR: Version $version doesn't exist" 1>&2
@@ -65,23 +72,31 @@ if [[ ${#versionFiles[@]} -eq 0 ]]; then
     exit 1
 fi
 
+# Fetching PR and checking if other files are changed or not.
+echo "Checking changes to other files"
+if [[ -n "$(gh pr diff $pr --name-only | grep -v -e 'src/assets/v'$version'/.*\.json')" ]]; then
+    echo "ERROR: PR contains changes in files other than src/assets/v$version/*.json" 1>&2
+    echo "Changed files:"
+    echo "$(gh pr diff $pr --name-only | grep -v -e 'src/assets/v'$version'/.*\.json')"
+    exit 1
+fi
+
 echo "Verifying Deployment Asset"
 gh pr diff $pr --patch | git apply --include 'src/assets/**'
 
 # Getting default addresses, address on the chain and checking code hash.
+defaultAddresses=$(jq -r '.addresses' "$versionFiles")
+deploymentTypes=($(jq -r --arg c "$chainid" '.networkAddresses[$c][]' "$versionFiles"))
 for file in "${versionFiles[@]}"; do
-    defaultAddress=$(jq -r '.defaultAddress' "$file")
-    networkAddress=$(jq -r --arg c "$chainid" '.networkAddresses[$c]' "$file")
-    if [[ $defaultAddress != $networkAddress ]]; then
-        echo "ERROR: "$file" default address is not the same as the one created for the chain id" 1>&2
-        exit 1
-    fi
-    defaultCodeHash=$(jq -r '.codeHash' "$file")
-    networkCodeHash=$(cast keccak $(cast code $networkAddress --rpc-url $rpc))
-    if [[ $defaultCodeHash != $networkCodeHash ]]; then
-        echo "ERROR: "$file" code hash is not the same as the one created for the chain id" 1>&2
-        exit 1
-    fi
+    for deploymentType in "${deploymentTypes[@]}"; do
+        defaultAddress=$(jq -r --arg t "$deploymentType" '.addresses[$t]' "$file")
+        defaultCodeHash=$(jq -r --arg t "$deploymentType" '.codeHash[$t]' "$file")
+        networkCodeHash=$(cast keccak $(cast code $defaultAddress --rpc-url $rpc))
+        if [[ $defaultCodeHash != $networkCodeHash ]]; then
+            echo "ERROR: "$file"("$defaultAddress") code hash is not the same as the one created for the chain id" 1>&2
+            exit 1
+        fi
+    done
 done
 
 echo "Network addresses & Code hashes are correct"
@@ -89,9 +104,7 @@ echo "Network addresses & Code hashes are correct"
 git restore --ignore-unmerged -- src/assets
 
 # NOTE/TODO
-# - We should still manually verify there is no extra code in the PR.
-# - We could fetch the version, chain id and rpc from the PR (needs a standard format and possibly a tag in PR).
+# - We should still manually verify there is no extra chain added in the PR.
 # - We can approve PR using Github CLI. Should only be added after all manual tasks can be automated.
 # - Supporting zkSync and alternative deployment addresses for 1.3.0 contracts.
-# - If there are changes in any other path other than src/assets, the script should show an error.
 # - We should ensure there are not more than a single chain ID being added in a PR.
