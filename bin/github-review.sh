@@ -8,17 +8,13 @@ usage() {
 This script verifies the deployed contracts on a chain ID for a given PR.
 
 USAGE
-    bash ./bin/github-review.sh <PR> <CHAIN_ID> <RPC_URL> <VERSION>
+    bash ./bin/github-review.sh <PR>
 
 ARGUMENTS
     PR          The GitHub PR number
-    CHAIN_ID    The chain ID to verify
-    RPC_URL     The RPC URL to use for the chain ID
-    VERSION     The version of the contracts to verify
 
 EXAMPLES
-    bash ./bin/github-review.sh 123 1 https://rpc.ankr.com/eth 1.3.0
-    bash ./bin/github-review.sh 123 1 https://rpc.ankr.com/eth 1.4.1
+    bash ./bin/github-review.sh 123
 EOF
 }
 
