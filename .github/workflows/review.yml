@@ -29,7 +29,7 @@ jobs:
         run: |
           echo "script_result="$(bash bin/github-review.sh ${PR_NUMBER}) >> $GITHUB_OUTPUT;
 
-  approved-by-ci:
+  review-output:
     runs-on: ubuntu-latest
     needs: [review-check]
     steps:
@@ -37,4 +37,4 @@ jobs:
     - name: Post Comment to the PR
       if: needs.review-check.outputs.review-result
       run: |
-        gh pr comment "$PR_NUMBER" --repo "$REPO" --body "$needs.review-check.outputs.review-result"
+        gh pr comment "$PR_NUMBER" --repo "$REPO" --body ${needs.review-check.outputs.review-result}"
