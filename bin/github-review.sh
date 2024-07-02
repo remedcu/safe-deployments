@@ -92,9 +92,7 @@ echo "$fileLineChangeJSON" | jq -r '.files[] | "\(.path) \(.additions) \(.deleti
     # Now you can perform checks on $additions and $deletions as per your requirements
     if [[ ($additions == 2 && $deletions == 1) ]]; then
         edgeCase=1
-    elif [[ ($additions == 1 && $deletions == 0) ]]; then
-        echo "Only single chain added"
-    else
+    elif [[ ($additions != 1 || $deletions != 0) ]]; then
         echo "ERROR: $path has invalid changes" 1>&2
         exit 1
     fi
