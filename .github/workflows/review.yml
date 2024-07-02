@@ -27,7 +27,7 @@ jobs:
       - name: Check PR
         id: review-check-result
         run: |
-          script_result=$(bash bin/github-review.sh ${PR_NUMBER} 2>&1)
+          script_result=$(bash bin/github-review.sh ${PR_NUMBER} 1>&2)
           echo "script_result=$script_result" >> $GITHUB_OUTPUT;
 
   review-output:
