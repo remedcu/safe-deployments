@@ -8,17 +8,13 @@ usage() {
 This script verifies the deployed contracts on a chain ID for a given PR.
 
 USAGE
-    bash ./bin/github-review.sh <PR> <CHAIN_ID> <RPC_URL> <VERSION>
+    bash ./bin/github-review.sh <PR>
 
 ARGUMENTS
     PR          The GitHub PR number
-    CHAIN_ID    The chain ID to verify
-    RPC_URL     The RPC URL to use for the chain ID
-    VERSION     The version of the contracts to verify
 
 EXAMPLES
-    bash ./bin/github-review.sh 123 1 https://rpc.ankr.com/eth 1.3.0
-    bash ./bin/github-review.sh 123 1 https://rpc.ankr.com/eth 1.4.1
+    bash ./bin/github-review.sh 123
 EOF
 }
 
@@ -77,7 +73,7 @@ echo "Checking changes to other files"
 if [[ -n "$(gh pr diff $pr --name-only | grep -v -e 'src/assets/v'$version'/.*\.json')" ]]; then
     echo "ERROR: PR contains changes in files other than src/assets/v$version/*.json" 1>&2
     echo "Changed files:"
-    echo "$(gh pr diff $pr --name-only | grep -v -e 'src/assets/v'$version'/.*\.json')"
+    echo "$(gh pr diff $pr --name-only | grep -v -e 'src/assets/v'$version'/.*\.json')" 1>&2
     exit 1
 fi
 
@@ -91,17 +87,15 @@ echo "$fileLineChangeJSON" | jq -r '.files[] | "\(.path) \(.additions) \(.deleti
 
     # Now you can perform checks on $additions and $deletions as per your requirements
     if [[ ($additions == 2 && $deletions == 1) ]]; then
-        echo "Edge case when adding chain with the highest chain id number"
         edgeCase=1
-    elif [[ ($additions == 1 && $deletions == 0) ]]; then
-        echo "Only single chain added"
-    else
+    elif [[ ($additions != 1 || $deletions != 0) ]]; then
         echo "ERROR: $path has invalid changes" 1>&2
         exit 1
     fi
 done
 
 if [[ $edgeCase == 1 ]]; then
+    echo "Edge case when adding chain with the highest chain id number"
     diffPatchSeparated=($(gh pr diff $pr | grep -E '^[+-] '))
     # Adding three elements at a time together to compare from the output array
     diffPatch=()
@@ -136,7 +130,7 @@ if [[ $edgeCase == 1 ]]; then
                 fi
                 # Check the pattern for the set of three lines
                 if [ "$pattern_correct" = false ]; then
-                    echo "Unknown lines added or removed"
+                    echo "Unknown lines added or removed" 1>&2
                     exit 1
                 fi
                 # Reset the pattern_correct flag for the next set of lines
