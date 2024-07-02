@@ -36,5 +36,5 @@ jobs:
     - name: Post Comment to the PR
       if: needs.review-check.outputs.review-result
       run: |
-        gh pr comment "$PR_NUMBER" --repo "$REPO" --body "${needs.review-check.outputs.review-result}" --edit-last || gh pr comment "$NUMBER" --repo "$REPO" --body "${needs.review-check.outputs.review-result}"
+        gh pr comment "$PR_NUMBER" --repo "$REPO" --body "$needs.review-check.outputs.review-result" --edit-last || gh pr comment "$NUMBER" --repo "$REPO" --body "$needs.review-check.outputs.review-result"
         gh pr edit "$PR_NUMBER" --repo "$REPO" --add-label approved-by-ci
