@@ -33,12 +33,12 @@ jobs:
     runs-on: ubuntu-latest
     needs: [review-check]
     steps:
-    - uses: actions/checkout@v4
-    - name: Post Success Comment to the PR
-      if: !needs.review-check.outputs.review-result
-      run: |
-        gh pr comment "$PR_NUMBER" --repo "$REPO" --body "✅ Success: Network addresses & Code hashes are correct"
-    - name: Post Failure Comment to the PR
-      if: !needs.review-check.outputs.review-result
-      run: |
-        gh pr comment "$PR_NUMBER" --repo "$REPO" --body "⛔️ Error: Check the `review-check` log for more details"
+      - uses: actions/checkout@v4
+      - name: Post Success Comment to the PR
+        if: !needs.review-check.outputs.review-result
+        run: |
+          gh pr comment "$PR_NUMBER" --repo "$REPO" --body "✅ Success: Network addresses & Code hashes are correct"
+      - name: Post Failure Comment to the PR
+        if: !needs.review-check.outputs.review-result
+        run: |
+          gh pr comment "$PR_NUMBER" --repo "$REPO" --body "⛔️ Error: Check the `review-check` log for more details"
