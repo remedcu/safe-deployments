@@ -5,7 +5,6 @@ on:
   workflow_dispatch:
 
 env:
-  GH_TOKEN: ${{ github.token }}
   PR_NUMBER: ${{ github.event.number }}
   REPO: ${{ github.repository }}
 
@@ -20,10 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: 'main'
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
+          ref: 'origin/main'
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
       - name: Check PR
