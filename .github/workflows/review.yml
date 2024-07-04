@@ -26,19 +26,20 @@ jobs:
     - name: Check PR
       id: review-check-result
       run: |
-        script_result=$(bash bin/github-review.sh ${PR_NUMBER} 1>&2)
+        script_result=$(bash bin/github-review.sh ${PR_NUMBER} | tail -1)
         echo "script_result=$script_result" >> $GITHUB_OUTPUT;
 
-  review-output:
+  review-result:
     runs-on: ubuntu-latest
     needs: [review-check]
     steps:
     - uses: actions/checkout@v4
     - name: Post Success Comment to the PR
-      if: needs.review-check.outputs.review-result == ''
+      if: needs.review-check.outputs.review-result == 'Network addresses & Code hashes are correct'
       run: |
         gh pr comment "$PR_NUMBER" --repo "$REPO" --body "✅ Success: Network addresses & Code hashes are correct"
     - name: Post Failure Comment to the PR
-      if: needs.review-check.outputs.review-result
+      if: needs.review-check.outputs.review-result != 'Network addresses & Code hashes are correct'
       run: |
-        gh pr comment "$PR_NUMBER" --repo "$REPO" --body "⛔️ Error: Check the `review-check` log for more details"
+        gh pr comment "$PR_NUMBER" --repo "$REPO" --body "⛔️ Error: Check the 'review-check::Check PR' log for more details"
+        exit 1
