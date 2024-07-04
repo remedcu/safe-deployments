@@ -5,6 +5,7 @@ on:
   workflow_dispatch:
 
 env:
+  GH_TOKEN: ${{ github.token }}
   PR_NUMBER: ${{ github.event.number }}
   REPO: ${{ github.repository }}
 
