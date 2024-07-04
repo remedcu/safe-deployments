@@ -157,7 +157,7 @@ for file in "${versionFiles[@]}"; do
         defaultCodeHash=$(jq -r --arg t "$deploymentType" '.codeHash[$t]' "$file")
         networkCode=$(cast code $defaultAddress --rpc-url $rpc)
         echo $networkCode > code.txt
-        networkCodeHash=$(cast keccak $(cat code.txt))
+        networkCodeHash=$(cast keccak $(<code.txt))
         rm code.txt
         if [[ $defaultCodeHash != $networkCodeHash ]]; then
             echo "ERROR: "$file"("$defaultAddress") code hash is not the same as the one created for the chain id" 1>&2
